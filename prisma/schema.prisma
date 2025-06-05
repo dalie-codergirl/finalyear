@@ -1,0 +1,242 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:@localhost:3306/sprodeta"
+  // Default XAMPP MySQL has:
+  // username: root
+  // password: (blank)
+}
+
+enum UserRole {
+  ADMIN
+  SENIOR_MANAGER
+  PROJECT_MANAGER
+  ACCOUNTANT
+  FIELD_OFFICER
+}
+
+model User {
+  id             String        @id @default(uuid())
+  email          String        @unique
+  password       String
+  name           String
+  role           UserRole
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  projects       Project[]     @relation("ProjectOwner")
+  managedProjects Project[]     @relation("ProjectManager")
+  activities     Activity[]
+  payments       Payment[]
+  budgets        Budget[]
+  reports        FinancialReport[]
+  timelines      Timeline[]    @relation("TimelineSetBy")
+  objectives     ProjectObjective[] @relation("ObjectiveSetBy")
+  kpis           ProjectKPI[]  @relation("KPISetBy")
+  lessons        LessonLearned[] @relation("LessonRecordedBy")
+}
+
+model Project {
+  id             String         @id @default(uuid())
+  name           String
+  description    String?
+  location       String
+  startDate      DateTime
+  endDate        DateTime
+  status         ProjectStatus  @default(PLANNING)
+  totalBudget    Float
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  createdBy      User           @relation("ProjectOwner", fields: [createdById], references: [id])
+  createdById    String
+  managedBy      User?          @relation("ProjectManager", fields: [managerId], references: [id])
+  managerId      String?
+  activities     Activity[]
+  budgets        Budget[]
+  payments       Payment[]
+  kpis           ProjectKPI[]
+  objectives     ProjectObjective[]
+  projectPlans   ProjectPlan[]
+  lessonsLearned LessonLearned[]
+  financialReports FinancialReport[]
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+model Activity {
+  id             String        @id @default(uuid())
+  name           String
+  description    String?
+  startDate      DateTime
+  endDate        DateTime
+  status         ActivityStatus @default(NOT_STARTED)
+  progress       Int           @default(0)
+  budget         Float
+  expenditure    Float         @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  project        Project       @relation(fields: [projectId], references: [id])
+  projectId      String
+  responsible    User          @relation(fields: [responsibleId], references: [id])
+  responsibleId  String
+  payments       Payment[]
+  timelines      Timeline[]
+}
+
+enum ActivityStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  DELAYED
+  CANCELLED
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  amount         Float
+  date           DateTime
+  description    String
+  status         PaymentStatus @default(PENDING)
+  paymentMethod  String
+  reference      String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  project        Project       @relation(fields: [projectId], references: [id])
+  projectId      String
+  activity       Activity?     @relation(fields: [activityId], references: [id])
+  activityId     String?
+  processedBy    User          @relation(fields: [processedById], references: [id])
+  processedById  String
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSED
+  CANCELLED
+  FAILED
+  RECONCILED
+}
+
+model Budget {
+  id             String        @id @default(uuid())
+  category       String
+  allocated      Float
+  spent          Float         @default(0)
+  remaining      Float
+  fiscalYear     String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  project        Project       @relation(fields: [projectId], references: [id])
+  projectId      String
+  createdBy      User          @relation(fields: [createdById], references: [id])
+  createdById    String
+}
+
+model ProjectKPI {
+  id             String        @id @default(uuid())
+  name           String
+  targetValue    Float
+  currentValue   Float
+  unit           String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  project        Project       @relation(fields: [projectId], references: [id])
+  projectId      String
+  setBy          User          @relation("KPISetBy", fields: [setById], references: [id])
+  setById        String
+}
+
+model ProjectObjective {
+  id             String        @id @default(uuid())
+  description    String
+  priority       Int
+  status         String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  project        Project       @relation(fields: [projectId], references: [id])
+  projectId      String
+  setBy          User          @relation("ObjectiveSetBy", fields: [setById], references: [id])
+  setById        String
+}
+
+model ProjectPlan {
+  id             String        @id @default(uuid())
+  name           String
+  description    String?
+  templateType   String
+  content        Json
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  project        Project       @relation(fields: [projectId], references: [id])
+  projectId      String
+}
+
+model Timeline {
+  id             String        @id @default(uuid())
+  name           String
+  startDate      DateTime
+  endDate        DateTime
+  milestone      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  activity       Activity      @relation(fields: [activityId], references: [id])
+  activityId     String
+  setBy          User          @relation("TimelineSetBy", fields: [setById], references: [id])
+  setById        String
+}
+
+model FinancialReport {
+  id             String        @id @default(uuid())
+  name           String
+  type           ReportType
+  period         String
+  content        Json
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  project        Project       @relation(fields: [projectId], references: [id])
+  projectId      String
+  generatedBy    User          @relation(fields: [generatedById], references: [id])
+  generatedById  String
+}
+
+enum ReportType {
+  INCOME_STATEMENT
+  BALANCE_SHEET
+  CASH_FLOW
+  EXPENSE_REPORT
+  RECONCILIATION
+}
+
+model LessonLearned {
+  id             String        @id @default(uuid())
+  category       LessonCategory
+  description    String
+  recommendation String?
+  impact         String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  project        Project       @relation(fields: [projectId], references: [id])
+  projectId      String
+  recordedBy     User          @relation("LessonRecordedBy", fields: [recordedById], references: [id])
+  recordedById   String
+}
+
+enum LessonCategory {
+  SUCCESS
+  CHALLENGE
+  IMPROVEMENT
+}

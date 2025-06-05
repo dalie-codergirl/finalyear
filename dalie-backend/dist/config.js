@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CORS_ALLOWED_HEADERS = exports.CORS_METHODS = exports.CORS_CREDENTIALS = exports.CORS_ORIGINS = exports.JWT_EXPIRES_IN = exports.JWT_SECRET = exports.DB_NAME = exports.DB_PASSWORD = exports.DB_USER = exports.DB_PORT = exports.DB_HOST = exports.PORT = void 0;
+exports.PORT = process.env.PORT || 3000;
+exports.DB_HOST = process.env.DB_HOST || 'localhost';
+exports.DB_PORT = process.env.DB_PORT || 5432;
+exports.DB_USER = process.env.DB_USER || 'postgres';
+exports.DB_PASSWORD = process.env.DB_PASSWORD || 'root';
+exports.DB_NAME = process.env.DB_NAME || 'sprodeta';
+exports.JWT_SECRET = process.env.JWT_SECRET || 'secret';
+exports.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
+exports.CORS_ORIGINS = process.env.CORS_ORIGINS || '*';
+exports.CORS_CREDENTIALS = process.env.CORS_CREDENTIALS || true;
+exports.CORS_METHODS = process.env.CORS_METHODS || 'GET,HEAD,PUT,PATCH,POST,DELETE';
+exports.CORS_ALLOWED_HEADERS = process.env.CORS_ALLOWED_HEADERS || 'Content-Type, Authorization';
