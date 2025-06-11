@@ -1,5 +1,14 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import axios, { AxiosResponse } from 'axios';
 
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true,
+});
+
+// Types
 export interface DashboardStats {
   activeProjects: number;
   pendingReports: number;
@@ -9,6 +18,9 @@ export interface DashboardStats {
 export interface Project {
   id: string;
   name: string;
+  status: string;
+  startDate: string;
+  endDate: string;
 }
 
 export interface ProjectProgress {
@@ -33,73 +45,29 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'An error occurred');
+async function handleResponse<T>(response: AxiosResponse): Promise<ApiResponse<T>> {
+  if (response.status >= 400) {
+    throw new Error(response.data?.message || 'An error occurred');
   }
-  const data = await response.json();
-  return { data };
+  return { data: response.data };
 }
 
-export const api = {
-  // Dashboard Statistics
-  getDashboardStats: async (): Promise<ApiResponse<DashboardStats>> => {
-    const response = await fetch(`${API_BASE_URL}/dashboard/stats`, {
-      credentials: 'include'
-    });
-    return handleResponse<DashboardStats>(response);
-  },
+// API functions
+export const getDashboardStats = () => api.get<DashboardStats>('/dashboard/stats');
+export const getProjects = () => api.get<Project[]>('/dashboard/projects');
+export const getProjectProgress = (projectId?: string) => 
+  api.get<ProjectProgress>(`/dashboard/project-progress/${projectId || ''}`);
+export const getBudgetOverview = (projectId?: string) => 
+  api.get<BudgetData>(`/dashboard/budget/${projectId || ''}`);
 
-  // Projects
-  getProjects: async (): Promise<ApiResponse<Project[]>> => {
-    const response = await fetch(`${API_BASE_URL}/projects`, {
-      credentials: 'include'
-    });
-    return handleResponse<Project[]>(response);
-  },
+export const submitProjectInsight = async (data: ProjectInsight): Promise<ApiResponse<void>> => {
+  const response = await api.post('/lessons', data);
+  return handleResponse<void>(response);
+};
 
-  // Project Progress
-  getProjectProgress: async (projectId?: string): Promise<ApiResponse<ProjectProgress>> => {
-    const url = projectId 
-      ? `${API_BASE_URL}/projects/progress?projectId=${projectId}`
-      : `${API_BASE_URL}/projects/progress`;
-    const response = await fetch(url, {
-      credentials: 'include'
-    });
-    return handleResponse<ProjectProgress>(response);
-  },
+export const logout = async (): Promise<ApiResponse<void>> => {
+  const response = await api.post('/auth/logout');
+  return handleResponse<void>(response);
+};
 
-  // Budget Overview
-  getBudgetOverview: async (projectId?: string): Promise<ApiResponse<BudgetData>> => {
-    const url = projectId 
-      ? `${API_BASE_URL}/budget/overview?projectId=${projectId}`
-      : `${API_BASE_URL}/budget/overview`;
-    const response = await fetch(url, {
-      credentials: 'include'
-    });
-    return handleResponse<BudgetData>(response);
-  },
-
-  // Project Insights
-  submitProjectInsight: async (data: ProjectInsight): Promise<ApiResponse<void>> => {
-    const response = await fetch(`${API_BASE_URL}/lessons`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(data),
-    });
-    return handleResponse<void>(response);
-  },
-
-  // Auth
-  logout: async (): Promise<ApiResponse<void>> => {
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: 'POST',
-      credentials: 'include'
-    });
-    return handleResponse<void>(response);
-  }
-}; 
+export default api; 

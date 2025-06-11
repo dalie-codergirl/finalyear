@@ -7,6 +7,7 @@ import { Server as SocketServer } from 'socket.io';
 import { Server } from './server';
 import { sequelize } from './models';
 import { UserController } from './controllers/user.controller';
+import fieldOfficerRoutes from './routes/fieldOfficer';
 
 class Application {
   private server: Server;
@@ -64,3 +65,6 @@ class Application {
 
 const app = new Application();
 app.start();
+
+// Routes
+app.use('/api/field', fieldOfficerRoutes);

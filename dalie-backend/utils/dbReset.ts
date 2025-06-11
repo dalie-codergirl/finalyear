@@ -1,5 +1,6 @@
 import { sequelize } from "../models";
-import UserModel, { User, UserRole } from "../models/user.model";
+import UserModel, { User } from "../models/user.model";
+import { UserRole } from "../models/user.model";
 import DonorModel, { Donor } from "../models/donor.model";
 import ProjectModel, { Project, ProjectStatus } from "../models/project.model";
 
@@ -55,7 +56,7 @@ async function resetDatabase() {
 
     await UserModel.create({
       email: 'admin@sprodeta.org',
-      password_hash: '$2b$10$ExampleHashForSecurePassword',
+      password_hash: '$2b$12$qFVOexqUL3/qhlHwy8W8eu0S80hxq2h382cTQrJyqyDJiJlCVRBhe',
       first_name: 'Admin',
       last_name: 'User',
       role: UserRole.ADMIN,

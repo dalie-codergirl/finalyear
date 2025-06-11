@@ -1,38 +1,60 @@
-import { config } from '  dotenv';
-import path from 'path';
+require('dotenv').config();
 
-config({ path: path.resolve(__dirname, '.env') });
+const {
+  DB_HOST = 'localhost',
+  DB_PORT = '5432',
+  DB_NAME = 'sprodeta',
+  DB_USER = 'postgres',
+  DB_PASSWORD = '',
+  NODE_ENV = 'development',
+} = process.env;
 
-module.exports = {
+const config = {
   development: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432'),
+    username: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_NAME,
+    host: DB_HOST,
+    port: parseInt(DB_PORT, 10),
     dialect: 'postgres',
     logging: console.log,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
   },
   test: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME_TEST,
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432'),
+    username: DB_USER,
+    password: DB_PASSWORD,
+    database: `${DB_NAME}_test`,
+    host: DB_HOST,
+    port: parseInt(DB_PORT, 10),
     dialect: 'postgres',
+    logging: false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
   },
   production: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432'),
+    username: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_NAME,
+    host: DB_HOST,
+    port: parseInt(DB_PORT, 10),
     dialect: 'postgres',
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
+    logging: false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
     },
   },
 };
+
+module.exports = config;

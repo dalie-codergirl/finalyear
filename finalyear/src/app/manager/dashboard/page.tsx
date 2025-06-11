@@ -18,7 +18,8 @@ import {
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import NotificationSystem from '../components/NotificationSystem';
-import { api, DashboardStats, Project, ProjectProgress, BudgetData } from '@/services/api';
+import { getDashboardStats, getProjects, getProjectProgress, getBudgetOverview } from '@/services/api';
+import { DashboardStats, Project, ProjectProgress, BudgetData } from '@/services/api';
 import { toast } from 'react-hot-toast';
 
 // Import Chart.js components
@@ -89,10 +90,10 @@ export default function ManagerDashboard() {
       try {
         // Fetch all data in parallel
         const [statsRes, projectsRes, progressRes, budgetRes] = await Promise.all([
-          api.getDashboardStats(),
-          api.getProjects(),
-          api.getProjectProgress(),
-          api.getBudgetOverview()
+          getDashboardStats(),
+          getProjects(),
+          getProjectProgress(),
+          getBudgetOverview()
         ]);
 
         setStats(statsRes.data);
@@ -116,8 +117,8 @@ export default function ManagerDashboard() {
       const fetchProjectData = async () => {
         try {
           const [progressRes, budgetRes] = await Promise.all([
-            api.getProjectProgress(selectedProject),
-            api.getBudgetOverview(selectedProject)
+            getProjectProgress(selectedProject),
+            getBudgetOverview(selectedProject)
           ]);
 
           setProjectProgress(progressRes.data);
@@ -333,7 +334,7 @@ export default function ManagerDashboard() {
           </div>
         )}
 
-        {/* Project Overview Cards */}
+        {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">

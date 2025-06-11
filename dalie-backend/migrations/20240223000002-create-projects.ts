@@ -1,30 +1,7 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from './index';
-import { BaseModel } from './base.model';
+import { QueryInterface, DataTypes } from 'sequelize';
 
-export enum ProjectStatus {
-  PLANNED = 'planned',
-  ACTIVE = 'active',
-  COMPLETED = 'completed',
-  SUSPENDED = 'suspended',
-}
-
-export class Project extends Model {
-  public id!: string;
-  public name!: string;
-  public description!: string;
-  public status!: 'active' | 'completed' | 'on_hold' | 'cancelled';
-  public startDate!: Date;
-  public endDate!: Date;
-  public budget!: number;
-  public location!: string;
-  public managerId!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
-}
-
-Project.init(
-  {
+export async function up(queryInterface: QueryInterface): Promise<void> {
+  await queryInterface.createTable('projects', {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -63,13 +40,26 @@ Project.init(
     managerId: {
       type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'RESTRICT',
     },
-  },
-  {
-    sequelize,
-    tableName: 'projects',
-    modelName: 'Project',
-  }
-);
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+  });
+}
 
-export default Project;
+export async function down(queryInterface: QueryInterface): Promise<void> {
+  await queryInterface.dropTable('projects');
+} 

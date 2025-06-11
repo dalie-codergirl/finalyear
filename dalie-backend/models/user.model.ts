@@ -2,13 +2,9 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from './index';
 import { BaseModel } from './base.model';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcrypt';
 
-export enum UserRole {
-  ADMIN = 'admin',
-  MANAGER = 'manager',
-  FIELD_OFFICER = 'field_officer',
-  VIEWER = 'viewer',
-}
+export type UserRole = 'admin' | 'manager' | 'field_officer' | 'accountant';
 
 interface UserAttributes {
   id: string;
@@ -46,6 +42,11 @@ class UserModel extends Model<UserAttributes, UserCreationAttributes> implements
     delete values.password_hash;
     values.fullName = `${this.first_name} ${this.last_name}`;
     return values;
+  }
+
+  // Instance method to check password
+  async validatePassword(password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.password_hash);
   }
 }
 
@@ -86,7 +87,7 @@ UserModel.init(
       allowNull: true,
     },
     role: {
-      type: DataTypes.ENUM(...Object.values(UserRole)),
+      type: DataTypes.ENUM('admin', 'manager', 'field_officer', 'accountant'),
       allowNull: false,
     },
     is_active: {
@@ -115,9 +116,19 @@ UserModel.init(
     createdAt: 'created_at',
     updatedAt: 'updated_at',
     hooks: {
-      beforeCreate: (user) => {
+      beforeCreate: async (user) => {
         if (!user.id) {
           user.id = uuidv4();
+        }
+        if (user.password_hash) {
+          const salt = await bcrypt.genSalt(10);
+          user.password_hash = await bcrypt.hash(user.password_hash, salt);
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed('password_hash')) {
+          const salt = await bcrypt.genSalt(10);
+          user.password_hash = await bcrypt.hash(user.password_hash, salt);
         }
       },
     },
