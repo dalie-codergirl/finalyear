@@ -26,7 +26,7 @@ const {
   DB_PORT = '5432',
   DB_NAME = 'sprodeta',
   DB_USER = 'postgres',
-  DB_PASSWORD = '',
+  DB_PASSWORD = 'root',
   NODE_ENV = 'development',
 } = process.env;
 

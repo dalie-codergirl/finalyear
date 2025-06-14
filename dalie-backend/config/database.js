@@ -1,60 +1,41 @@
 require('dotenv').config();
 
-const {
-  DB_HOST = 'localhost',
-  DB_PORT = '5432',
-  DB_NAME = 'sprodeta',
-  DB_USER = 'postgres',
-  DB_PASSWORD = '',
-  NODE_ENV = 'development',
-} = process.env;
-
-const config = {
+module.exports = {
   development: {
-    username: DB_USER,
-    password: DB_PASSWORD,
-    database: DB_NAME,
-    host: DB_HOST,
-    port: parseInt(DB_PORT, 10),
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    database: process.env.DB_NAME || 'dalie_dev',
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
-    logging: console.log,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
-    },
+    dialectOptions: {
+      bigNumberStrings: true
+    }
   },
   test: {
-    username: DB_USER,
-    password: DB_PASSWORD,
-    database: `${DB_NAME}_test`,
-    host: DB_HOST,
-    port: parseInt(DB_PORT, 10),
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    database: process.env.DB_NAME || 'dalie_test',
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
-    logging: false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
-    },
+    dialectOptions: {
+      bigNumberStrings: true
+    }
   },
   production: {
-    username: DB_USER,
-    password: DB_PASSWORD,
-    database: DB_NAME,
-    host: DB_HOST,
-    port: parseInt(DB_PORT, 10),
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
     dialect: 'postgres',
-    logging: false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
-    },
-  },
-};
-
-module.exports = config;
+    dialectOptions: {
+      bigNumberStrings: true,
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
+  }
+}; 

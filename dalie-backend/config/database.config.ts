@@ -3,7 +3,7 @@ import { Dialect } from 'sequelize';
 export const databaseConfig = {
   development: {
     username: 'postgres',
-    password: 'dali1605',
+    password: 'root',
     database: 'sprodeta',
     host: 'localhost',
     port: 5432,
@@ -12,8 +12,8 @@ export const databaseConfig = {
   },
   test: {
     username: 'postgres',
-    password: 'dali1605',
-    database: 'sprodeta_test',
+    password: 'root',
+    database: 'sprodeta',
     host: 'localhost',
     port: 5432,
     dialect: 'postgres' as Dialect,
@@ -21,7 +21,7 @@ export const databaseConfig = {
   },
   production: {
     username: 'postgres',
-    password: 'dali1605',
+    password: 'root',
     database: 'sprodeta',
     host: 'localhost',
     port: 5432,
